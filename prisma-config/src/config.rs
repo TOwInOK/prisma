@@ -18,6 +18,40 @@ pub struct Config {
     pub options: CoreOptions,
 }
 
+impl Config {
+    /// Normalizes version information across extensions
+    ///
+    /// Push core version into extensions if is't latest.
+    /// If extension has version, skip it.
+    pub fn normolize(mut self) -> Self {
+        // For configs with a specific core version
+        match self.core.version {
+            // If we have a specific core version
+            Version::Specific(ref core_version, _, _) => {
+                // Update any extensions that don't have specific versions set
+                for extension in self.extensions.iter_mut() {
+                    // Only handle specific version types
+                    let Version::Specific(ext_version, ext_build, channel) = &extension.version
+                    else {
+                        continue;
+                    };
+                    // If extension version is None, inherit from core
+                    if ext_version.is_none() {
+                        extension.version = Version::Specific(
+                            core_version.clone(),
+                            ext_build.clone(),
+                            channel.clone(),
+                        );
+                    }
+                }
+                self
+            }
+            // For other version types, return unchanged
+            _ => self,
+        }
+    }
+}
+
 /// Core configuration for the Minecraft server
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CoreConfig {

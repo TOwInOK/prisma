@@ -1,0 +1,12 @@
+[package]
+name = "prisma-hash"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+md5 = "0.7.0"
+sha1 = "0.10.6"
+sha2 = "0.10.8"
+serde = {workspace = true, features = ["derive"]}
+digest = "0.10.7"

@@ -1,5 +1,5 @@
 [workspace]
-members = [ "prisma-config","prisma-core", "prisma-providers", "prisma-store"]
+members = [ "prisma-cli", "prisma-config","prisma-core", "prisma-hash", "prisma-providers", "prisma-store"]
 resolver = "2"
 
 [workspace.package]
