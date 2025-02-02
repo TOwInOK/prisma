@@ -25,11 +25,7 @@ pub enum Version {
     /// - if channel is none -> Release
     ///
     /// - if version & version build isn't empty -> version build
-    Specific(
-        Option<GameVersion>,
-        Option<GameVersionBuild>,
-        Option<Channel>,
-    ),
+    Specific(Option<GameVersion>, Option<GameVersionBuild>, Channel),
 }
 
 pub type GameVersion = String;

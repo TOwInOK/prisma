@@ -1,8 +1,5 @@
 use prisma_core::{
-    extension::{ExtensionType, Platform},
-    item::Item,
-    options::Options,
-    provider::Name,
+    extension::ExtensionType, item::Item, options::Options, platform::Platform, provider::Name,
     version::Version,
 };
 use serde::{Deserialize, Serialize};
@@ -19,11 +16,9 @@ pub struct Config {
 }
 
 impl Config {
-    /// Normalizes version information across extensions
-    ///
     /// Push core version into extensions if is't latest.
     /// If extension has version, skip it.
-    pub fn normolize(mut self) -> Self {
+    pub fn update_version(mut self) -> Self {
         // For configs with a specific core version
         match self.core.version {
             // If we have a specific core version
@@ -50,6 +45,20 @@ impl Config {
             _ => self,
         }
     }
+    /// Change platrgorm for all extensions if needed
+    pub fn update_platform(mut self) -> Self {
+        for extension in self.extensions.iter_mut() {
+            if extension.platform.is_none() {
+                extension.platform = Some(self.core.platform.clone())
+            }
+        }
+        self
+    }
+    /// Normalizes version & platform information across extensions
+    ///
+    pub fn normolise(self) -> Self {
+        self.update_version().update_platform()
+    }
 }
 
 /// Core configuration for the Minecraft server
@@ -68,6 +77,10 @@ pub struct CoreConfig {
 pub struct ExtensionConfig {
     /// Extension name
     pub name: Name,
+    /// Platform for extension
+    ///
+    /// by default, providet by core
+    pub platform: Option<Platform>,
     /// Extension provider (Modrinth, etc)
     pub provider: ExtensionType,
     /// Version configuration
@@ -93,7 +106,11 @@ impl From<CoreConfig> for Item {
 impl From<ExtensionConfig> for Item {
     fn from(value: ExtensionConfig) -> Self {
         Self {
-            provider: prisma_core::provider::Provider::Extension((value.name, value.provider)),
+            provider: prisma_core::provider::Provider::Extension((
+                value.name,
+                value.platform.unwrap_or_default(),
+                value.provider,
+            )),
             version: value.version,
             options: value.options,
         }

@@ -1,4 +1,4 @@
-use super::extension::{ExtensionType, Platform};
+use super::{extension::ExtensionType, platform::Platform};
 
 #[derive(
     Debug,
@@ -14,7 +14,7 @@ use super::extension::{ExtensionType, Platform};
 )]
 pub enum Provider {
     Core(Platform),
-    Extension((Name, ExtensionType)),
+    Extension((Name, Platform, ExtensionType)),
 }
 
 pub type Name = String;

@@ -1,10 +1,11 @@
 use prisma_core::{
-    extension::{ExtensionProvider, ExtensionType, Platform},
+    extension::{ExtensionProvider, ExtensionType},
     item::Item,
+    platform::Platform,
     provider::Provider,
 };
 use prisma_hash::HashType;
-use providers::vanilla::Vanilla;
+use providers::{modrinth::ModrinthData, vanilla::Vanilla};
 
 pub mod providers;
 pub struct DownloadMeta {
@@ -39,9 +40,11 @@ impl DownloadMeta {
                 Platform::Forge => todo!(),
                 Platform::NeoForge => todo!(),
             },
-            Provider::Extension((_, extension_type)) => match extension_type {
+            Provider::Extension((name, platform, extension_type)) => match extension_type {
                 ExtensionType::Mod(extension_provider) => match extension_provider {
-                    ExtensionProvider::Modrinth => todo!(),
+                    ExtensionProvider::Modrinth => {
+                        ModrinthData::get_link(name, platform, value).await
+                    }
                 },
                 ExtensionType::Plugin(extension_provider) => match extension_provider {
                     ExtensionProvider::Modrinth => todo!(),
