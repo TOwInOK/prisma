@@ -79,10 +79,7 @@ impl ModrinthData {
                 }
             }
         };
-        let user_agent = format!(
-            "TOwInOK/Minecraft-Dependency-Manager (TOwInOK@nothub.ru) UID: {}",
-            machine_uid::get().unwrap()
-        );
+        let user_agent = format!("TOwInOK/Prisma UID: {}", machine_uid::get().unwrap());
         let client = reqwest::Client::builder().user_agent(user_agent).build()?;
 
         let modrinth_data: Vec<ModrinthData> =
@@ -90,7 +87,7 @@ impl ModrinthData {
 
         let modrinth_data = match modrinth_data.first() {
             Some(e) => e,
-            None => Err(format!("Plugin {} not found", name))?,
+            None => Err(format!("Extension {} not found", name))?,
         };
 
         let version = modrinth_data
@@ -108,6 +105,6 @@ impl ModrinthData {
                 version,
                 build: Some(modrinth_data.id.to_owned()),
             })
-            .ok_or_else(|| format!("Download link for plugin {} not found", name).into())
+            .ok_or_else(|| format!("Download link for extension {} not found", name).into())
     }
 }

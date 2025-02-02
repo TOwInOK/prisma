@@ -47,7 +47,9 @@ impl DownloadMeta {
                     }
                 },
                 ExtensionType::Plugin(extension_provider) => match extension_provider {
-                    ExtensionProvider::Modrinth => todo!(),
+                    ExtensionProvider::Modrinth => {
+                        ModrinthData::get_link(name, platform, value).await
+                    }
                 },
             },
         }
