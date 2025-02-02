@@ -1,0 +1,50 @@
+[workspace]
+members = [ "prisma-config","prisma-core", "prisma-providers", "prisma-store"]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+authors = ["TOwInOK <60252419+TOwInOK@users.noreply.github.com>"]
+# repository = "https://github.com/TOwInOK/SSS-rs"
+# license = "Apache-2.0"
+
+[workspace.dependencies]
+serde = { version = "1.0.217", features = ["derive"] }
+thiserror = "2.0"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+tokio = { version = "1", features = ["full"] }
+static_init = "1.0.3"
+strum = { version = "0.26", features = ["derive"] }
+
+[profile.dev]
+opt-level = 0
+debug = true
+strip = "none"
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = 'unwind'
+incremental = true
+codegen-units = 256
+rpath = false
+
+[profile.release]
+opt-level = 'z'
+debug = false
+lto = true
+codegen-units = 24
+panic = 'abort'
+strip = true
+incremental = true
+debug-assertions = false
+overflow-checks = false
+
+[profile.test]
+opt-level = 0
+debug = true
+
+[profile.bench]
+opt-level = 3
+debug = false

@@ -1,0 +1,9 @@
+[package]
+name = "prisma-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = {workspace = true, features = ["derive"]}
+strum = {workspace = true, features = ["derive"] }

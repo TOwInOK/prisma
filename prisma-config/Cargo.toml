@@ -1,0 +1,11 @@
+[package]
+name = "prisma-config"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = {workspace = true, features = ["derive"]}
+prisma-core = { path = "../prisma-core" }
+toml = "0.8.19"
+tokio = {workspace = true, features = ["fs"]}

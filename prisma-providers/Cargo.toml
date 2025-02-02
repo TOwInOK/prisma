@@ -1,0 +1,7 @@
+[package]
+name = "prisma-providers"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
