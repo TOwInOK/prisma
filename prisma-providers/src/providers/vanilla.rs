@@ -62,7 +62,6 @@ struct Server {
     sha1: String,
     url: String,
 }
-
 impl Vanilla {
     /// Retrieves download link and metadata for a Minecraft server jar
     ///

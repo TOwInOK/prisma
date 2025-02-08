@@ -5,7 +5,7 @@ use prisma_core::{
     provider::Provider,
 };
 use prisma_hash::HashType;
-use providers::{modrinth::ModrinthData, vanilla::Vanilla};
+use providers::{modrinth::ModrinthData, papermc::PaperMC, vanilla::Vanilla};
 
 pub mod providers;
 pub struct DownloadMeta {
@@ -30,10 +30,10 @@ impl DownloadMeta {
                 Platform::Vanilla => Vanilla::get_link(value).await,
                 Platform::Spigot => todo!(),
                 Platform::Bukkit => todo!(),
-                Platform::Paper => todo!(),
-                Platform::Folia => todo!(),
-                Platform::Waterfall => todo!(),
-                Platform::Velocity => todo!(),
+                Platform::Paper => PaperMC::get_link(value).await,
+                Platform::Folia => PaperMC::get_link(value).await,
+                Platform::Waterfall => PaperMC::get_link(value).await,
+                Platform::Velocity => PaperMC::get_link(value).await,
                 Platform::Purpur => todo!(),
                 Platform::Fabric => todo!(),
                 Platform::Quilt => todo!(),
