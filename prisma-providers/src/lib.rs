@@ -24,7 +24,7 @@ pub struct DownloadMeta {
 }
 
 impl DownloadMeta {
-    pub async fn from(value: &Item) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn fetch(value: &Item) -> Result<Self, Box<dyn std::error::Error>> {
         match &value.provider {
             Provider::Core(platform) => match platform {
                 Platform::Vanilla => Vanilla::get_link(value).await,
