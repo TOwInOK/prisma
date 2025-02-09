@@ -35,7 +35,7 @@ struct Application {
 async fn find_version(
     version: Option<&str>,
     core_name: &str,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let link = format!("https://api.papermc.io/v2/projects/{}", core_name);
     let version_list = reqwest::get(link)
         .await?
@@ -50,7 +50,9 @@ async fn find_version(
 }
 
 impl PaperMC {
-    pub async fn get_link(item: &Item) -> Result<DownloadMeta, Box<dyn std::error::Error>> {
+    pub async fn get_link(
+        item: &Item,
+    ) -> Result<DownloadMeta, Box<dyn std::error::Error + Send + Sync + 'static>> {
         let core_name = match &item.provider {
             Provider::Core(platform) => platform.as_ref().to_lowercase(),
             _ => panic!("Used unrichable type"),
@@ -120,7 +122,7 @@ async fn gen_link(
     core_name: String,
     game_version: &String,
     last_build: &str,
-) -> Result<(String, Url), Box<dyn std::error::Error>> {
+) -> Result<(String, Url), Box<dyn std::error::Error + Send + Sync + 'static>> {
     let buildlink = format!(
         "https://api.papermc.io/v2/projects/{}/versions/{}/builds/{}",
         core_name, game_version, last_build

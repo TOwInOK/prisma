@@ -5,3 +5,12 @@ edition.workspace = true
 authors.workspace = true
 
 [dependencies]
+serde = {workspace = true, features = ["derive"]}
+prisma-core = { path = "../prisma-core" }
+prisma-hash = { path = "../prisma-hash" }
+prisma-config = { path = "../prisma-config" }
+prisma-providers = { path = "../prisma-providers" }
+reqwest = { version = "0.12.12", features = [] }
+tempfile = "3.16.0"
+tokio = {workspace = true, features = ["fs"]}
+ron = "0.8.1"

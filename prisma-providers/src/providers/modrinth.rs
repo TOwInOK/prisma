@@ -42,7 +42,7 @@ impl ModrinthData {
         name: &String,
         platform: &Platform,
         item: &Item,
-    ) -> Result<DownloadMeta, Box<dyn std::error::Error>> {
+    ) -> Result<DownloadMeta, Box<dyn std::error::Error + Send + Sync + 'static>> {
         let channel = match &item.version.version_build {
             Some(channel) => channel.to_string(),
             None => Channel::Release.to_string(),

@@ -32,7 +32,9 @@ struct FileHash {
 const MAIN_LINK: &str = "https://api.purpurmc.org/v2/purpur";
 
 /// Find version in version list, if exist give out version or give error
-async fn find_version(version: Option<&str>) -> Result<String, Box<dyn std::error::Error>> {
+async fn find_version(
+    version: Option<&str>,
+) -> Result<String, Box<dyn std::error::Error + Send + Sync + 'static>> {
     let version_list = reqwest::get(MAIN_LINK)
         .await?
         .json::<VersionList>()
@@ -46,7 +48,9 @@ async fn find_version(version: Option<&str>) -> Result<String, Box<dyn std::erro
 }
 
 impl Purpur {
-    pub async fn get_link(item: &Item) -> Result<DownloadMeta, Box<dyn std::error::Error>> {
+    pub async fn get_link(
+        item: &Item,
+    ) -> Result<DownloadMeta, Box<dyn std::error::Error + Send + Sync + 'static>> {
         let version = find_version(item.version.game_version.as_deref()).await?;
         //Version string
         let verlink = format!("{}/{}", MAIN_LINK, version);
@@ -86,7 +90,7 @@ impl Purpur {
 async fn gen_link(
     version: &str,
     local_build: &str,
-) -> Result<(String, FileHash), Box<dyn std::error::Error>> {
+) -> Result<(String, FileHash), Box<dyn std::error::Error + Send + Sync + 'static>> {
     let build_link = format!("{}/{}/{}", MAIN_LINK, version, &local_build);
     let file_hash: FileHash = reqwest::get(&build_link).await?.json().await?;
     Ok((build_link, file_hash))

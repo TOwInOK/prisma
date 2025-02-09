@@ -1,6 +1,7 @@
 #[derive(
     Debug,
     Clone,
+    Copy,
     PartialEq,
     PartialOrd,
     serde::Serialize,

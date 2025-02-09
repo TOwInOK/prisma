@@ -67,7 +67,9 @@ impl Vanilla {
     ///
     /// Makes request to Mojang API to find the download link for minecraft.jar
     /// Returns DownloadMeta containing URL, hash and version info
-    pub async fn get_link(item: &Item) -> Result<DownloadMeta, Box<dyn std::error::Error>> {
+    pub async fn get_link(
+        item: &Item,
+    ) -> Result<DownloadMeta, Box<dyn std::error::Error + Send + Sync + 'static>> {
         let link = find_version(item.version.game_version.as_deref()).await?;
         let response = reqwest::get(link.0).await?;
         let download_section: DownloadSection = response.json().await?;
@@ -87,7 +89,7 @@ impl Vanilla {
 /// If no version specified, returns latest release version
 async fn find_version(
     version: Option<&str>,
-) -> Result<(String, String), Box<dyn std::error::Error>> {
+) -> Result<(String, String), Box<dyn std::error::Error + Send + Sync + 'static>> {
     const LINK: &str = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
     let response = reqwest::get(LINK).await?;

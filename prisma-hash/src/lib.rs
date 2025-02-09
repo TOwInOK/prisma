@@ -54,7 +54,7 @@ impl HashType {
     pub fn compare(
         &self,
         data: impl AsRef<[u8]>,
-    ) -> std::result::Result<(), Box<dyn std::error::Error>> {
+    ) -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         match self {
             HashType::SHA1(expected) => {
                 let hash = Self::compute_sha1(data);

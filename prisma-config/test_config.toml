@@ -1,0 +1,61 @@
+[core]
+platform = "Paper"
+
+[core.version]
+game_version = "1.20.1"
+version_build = "17"
+channel = "Release"
+
+[core.options]
+freeze = false
+force_update = false
+
+[[extensions]]
+name = "worldedit"
+platform = "Paper"
+
+[extensions.provider]
+Plugin = "Modrinth"
+
+[extensions.version]
+game_version = "1.20.1"
+channel = "Release"
+
+[extensions.options]
+freeze = false
+force_update = false
+
+[[extensions]]
+name = "vault"
+platform = "Paper"
+
+[extensions.provider]
+Plugin = "Modrinth"
+
+[extensions.version]
+game_version = "1.20.1"
+channel = "Release"
+
+[extensions.options]
+freeze = false
+force_update = false
+
+[options]
+port = 25565
+min_memory = 2048
+max_memory = 4096
+java_args = [
+    "-XX:+UseG1GC",
+    "-XX:+ParallelRefProcEnabled",
+    "-XX:MaxGCPauseMillis=200",
+]
+
+[options.properties]
+motd = "A Minecraft Server powered by Prisma"
+max_players = 20
+online_mode = true
+difficulty = "normal"
+gamemode = "survival"
+view_distance = 10
+allow_nether = true
+enable_command_block = false

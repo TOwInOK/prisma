@@ -24,17 +24,19 @@ pub struct DownloadMeta {
 }
 
 impl DownloadMeta {
-    pub async fn fetch(value: &Item) -> Result<Self, Box<dyn std::error::Error>> {
-        match &value.provider {
+    pub async fn fetch(
+        item: &Item,
+    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync + 'static>> {
+        match &item.provider {
             Provider::Core(platform) => match platform {
-                Platform::Vanilla => Vanilla::get_link(value).await,
+                Platform::Vanilla => Vanilla::get_link(item).await,
                 Platform::Spigot => unimplemented!("Need to implement for Spigot platform"),
                 Platform::Bukkit => unimplemented!("Need to implement for Bukkit platform"),
-                Platform::Paper => PaperMC::get_link(value).await,
-                Platform::Folia => PaperMC::get_link(value).await,
-                Platform::Waterfall => PaperMC::get_link(value).await,
-                Platform::Velocity => PaperMC::get_link(value).await,
-                Platform::Purpur => Purpur::get_link(value).await,
+                Platform::Paper => PaperMC::get_link(item).await,
+                Platform::Folia => PaperMC::get_link(item).await,
+                Platform::Waterfall => PaperMC::get_link(item).await,
+                Platform::Velocity => PaperMC::get_link(item).await,
+                Platform::Purpur => Purpur::get_link(item).await,
                 Platform::Fabric => unimplemented!("Need to implement for Fabric platform"),
                 Platform::Quilt => unimplemented!("Need to implement for Quilt platform"),
                 Platform::Forge => unimplemented!("Need to implement for Forge platform"),
@@ -43,12 +45,12 @@ impl DownloadMeta {
             Provider::Extension((name, platform, extension_type)) => match extension_type {
                 ExtensionType::Mod(extension_provider) => match extension_provider {
                     ExtensionProvider::Modrinth => {
-                        ModrinthData::get_link(name, platform, value).await
+                        ModrinthData::get_link(name, platform, item).await
                     }
                 },
                 ExtensionType::Plugin(extension_provider) => match extension_provider {
                     ExtensionProvider::Modrinth => {
-                        ModrinthData::get_link(name, platform, value).await
+                        ModrinthData::get_link(name, platform, item).await
                     }
                 },
             },
