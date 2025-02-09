@@ -19,3 +19,8 @@ pub const STORE_PATH: &str = "./.prisma/store.ron";
 
 // Config
 pub const CONFIG_PATH: &str = "./prisma.ron";
+
+// minecraft
+pub const PLUGINS_DIR: &str = "./plugins";
+pub const MODS_DIR: &str = "./mods";
+pub const CORE_DIR: &str = "./";

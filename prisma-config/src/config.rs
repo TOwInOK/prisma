@@ -1,7 +1,8 @@
 use prisma_core::{
     extension::ExtensionType, item::Item, options::Options, platform::Platform, provider::Name,
-    version::Version,
+    version::Version, CONFIG_PATH,
 };
+use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
 
 /// Configuration for a Minecraft server instance
@@ -40,6 +41,39 @@ impl Config {
     ///
     pub fn normolise(self) -> Self {
         self.update_version().update_platform()
+    }
+
+    /// Parses a TOML configuration file into a Config struct
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Optional path to the config file. If not provided, uses [DEFAULT_CONFIG_PATH]
+    ///
+    /// # Returns
+    ///
+    /// * Result<[Config], Box<[dyn std::error::Error]>> - The parsed config or an error
+    pub async fn parse_config(
+        path: Option<impl ToString>,
+    ) -> Result<Config, Box<dyn std::error::Error>> {
+        let path =
+            tokio::fs::read_to_string(path.map_or(CONFIG_PATH.to_string(), |p| p.to_string()))
+                .await?;
+        Ok(ron::de::from_bytes(&tokio::fs::read(path).await?)?)
+    }
+
+    pub async fn save_config(
+        &self,
+        path: Option<impl ToString>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let path =
+            tokio::fs::read_to_string(path.map_or(CONFIG_PATH.to_string(), |p| p.to_string()))
+                .await?;
+        tokio::fs::write(
+            path,
+            ron::ser::to_string_pretty(&self, PrettyConfig::default().enumerate_arrays(true))?,
+        )
+        .await?;
+        Ok(())
     }
 }
 
