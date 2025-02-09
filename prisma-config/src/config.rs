@@ -19,31 +19,13 @@ impl Config {
     /// Push core version into extensions if is't latest.
     /// If extension has version, skip it.
     pub fn update_version(mut self) -> Self {
-        // For configs with a specific core version
-        match self.core.version {
-            // If we have a specific core version
-            Version::Specific(ref core_version, _, _) => {
-                // Update any extensions that don't have specific versions set
-                for extension in self.extensions.iter_mut() {
-                    // Only handle specific version types
-                    let Version::Specific(ext_version, ext_build, channel) = &extension.version
-                    else {
-                        continue;
-                    };
-                    // If extension version is None, inherit from core
-                    if ext_version.is_none() {
-                        extension.version = Version::Specific(
-                            core_version.clone(),
-                            ext_build.clone(),
-                            channel.clone(),
-                        );
-                    }
-                }
-                self
-            }
-            // For other version types, return unchanged
-            _ => self,
+        if let Some(game_version) = self.core.version.game_version.as_ref() {
+            self.extensions
+                .iter_mut()
+                .filter(|ext| ext.version.game_version.is_none())
+                .for_each(|extension| extension.version.game_version = Some(game_version.clone()));
         }
+        self
     }
     /// Change platrgorm for all extensions if needed
     pub fn update_platform(mut self) -> Self {

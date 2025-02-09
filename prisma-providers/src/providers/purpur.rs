@@ -1,4 +1,4 @@
-use prisma_core::{item::Item, version::Version};
+use prisma_core::item::Item;
 use prisma_hash::HashType;
 use serde::{Deserialize, Serialize};
 
@@ -38,67 +38,56 @@ async fn find_version(version: Option<&str>) -> Result<String, Box<dyn std::erro
         .json::<VersionList>()
         .await?
         .versions;
-    match version {
-        None => match version_list.last() {
-            Some(e) => Ok(e.to_owned()),
-            None => Err("Not found latest version".into()),
-        },
-        Some(version) => {
-            if version_list.contains(&version.to_string()) {
-                Ok(version.to_owned())
-            } else {
-                Err(format!("Version {} not found", version).into())
-            }
-        }
-    }
+    version
+        .and_then(|v| version_list.iter().find(|x| x == &v))
+        .or_else(|| version_list.last())
+        .map(|v| v.to_owned())
+        .ok_or_else(|| "No versions available".into())
 }
 
 impl Purpur {
     pub async fn get_link(item: &Item) -> Result<DownloadMeta, Box<dyn std::error::Error>> {
-        let (version, build) = match &item.version {
-            Version::Latest => (None, None),
-            Version::Specific(version, build, _) => (version.clone(), build.clone()),
-        };
-
-        let version = find_version(version.as_deref()).await?;
+        let version = find_version(item.version.game_version.as_deref()).await?;
         //Version string
         let verlink = format!("{}/{}", MAIN_LINK, version);
         let build_list = reqwest::get(verlink).await?.json::<BuildList>().await?;
         let build_list_latest = build_list.builds.latest;
         let build_list = build_list.builds.all;
 
-        match build {
-            Some(ref local_build) => {
+        match item.version.version_build.as_ref() {
+            Some(local_build) => {
                 if build_list.iter().any(|x| x == local_build) {
-                    let build_link = format!("{}/{}/{}", MAIN_LINK, version, &local_build);
-                    let file_hash: FileHash = reqwest::get(&build_link).await?.json().await?;
+                    let (build_link, file_hash) = gen_link(&version, local_build).await?;
 
                     Ok(DownloadMeta {
                         download_link: format!("{}/download", build_link),
                         hash: HashType::new_md5(file_hash.md5),
-                        version,
-                        build,
+                        game_version: version,
+                        version_build: Some(local_build.clone()),
                     })
                 } else {
                     Err(format!("not found version {} with build {}", version, local_build).into())
                 }
             }
             None => {
-                let build_link = format!("{}/{}/{}", MAIN_LINK, version, &build_list_latest);
+                let (build_link, file_hash) = gen_link(&version, &build_list_latest).await?;
 
                 Ok(DownloadMeta {
                     download_link: format!("{}/download", build_link),
-                    hash: HashType::new_md5(
-                        reqwest::get(&build_link)
-                            .await?
-                            .json::<FileHash>()
-                            .await?
-                            .md5,
-                    ),
-                    version,
-                    build: Some(build_list_latest),
+                    hash: HashType::new_md5(file_hash.md5),
+                    game_version: version,
+                    version_build: Some(build_list_latest),
                 })
             }
         }
     }
+}
+
+async fn gen_link(
+    version: &str,
+    local_build: &str,
+) -> Result<(String, FileHash), Box<dyn std::error::Error>> {
+    let build_link = format!("{}/{}/{}", MAIN_LINK, version, &local_build);
+    let file_hash: FileHash = reqwest::get(&build_link).await?.json().await?;
+    Ok((build_link, file_hash))
 }

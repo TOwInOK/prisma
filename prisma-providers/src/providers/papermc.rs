@@ -1,4 +1,4 @@
-use prisma_core::{item::Item, provider::Provider, version::Version};
+use prisma_core::{item::Item, provider::Provider};
 use prisma_hash::HashType;
 use serde::{Deserialize, Serialize};
 
@@ -42,19 +42,11 @@ async fn find_version(
         .json::<VersionList>()
         .await?
         .versions;
-    match version {
-        None => match version_list.last() {
-            Some(e) => Ok(e.to_owned()),
-            None => Err("Not found latest version".into()),
-        },
-        Some(version) => {
-            if version_list.iter().any(|x| x == version) {
-                Ok(version.to_owned())
-            } else {
-                Err(format!("Version {} not found", version).into())
-            }
-        }
-    }
+    version
+        .and_then(|v| version_list.iter().find(|x| x == &v))
+        .or_else(|| version_list.last())
+        .map(|v| v.to_owned())
+        .ok_or_else(|| "No versions available".into())
 }
 
 impl PaperMC {
@@ -64,55 +56,48 @@ impl PaperMC {
             _ => panic!("Used unrichable type"),
         };
 
-        let (version, build) = match &item.version {
-            Version::Latest => (None, None),
-            Version::Specific(version, build, _) => (version.clone(), build.clone()),
-        };
+        let game_version = item.version.game_version.as_deref();
 
-        let version = find_version(version.as_deref(), &core_name).await?;
+        // check on exist
+        let game_version = find_version(game_version, &core_name).await?;
 
-        let verlink = format!(
+        let version_build_link = format!(
             "https://api.papermc.io/v2/projects/{}/versions/{}",
-            core_name, version
+            core_name, game_version
         );
 
-        let build_list = reqwest::get(verlink)
+        let build_list = reqwest::get(version_build_link)
             .await?
             .json::<BuildList>()
             .await?
             .builds;
 
-        let result = match build.as_deref() {
-            Some(local_build) => {
-                if build_list
+        match item.version.version_build.clone() {
+            Some(build) => {
+                if !build_list
                     .iter()
-                    .any(|x| *x == local_build.parse::<u16>().unwrap_or_default())
+                    .any(|x| *x == build.parse::<u16>().unwrap_or_default())
                 {
-                    let link = format!(
-                        "https://api.papermc.io/v2/projects/{}/versions/{}/builds/{}",
-                        core_name, version, local_build
+                    return Err(
+                        format!("not found version {} with build {}", game_version, build).into(),
                     );
-                    let url = reqwest::get(&link).await?.json::<Url>().await?;
-                    Ok(DownloadMeta {
-                        download_link: format!(
-                            "{}/downloads/{}",
-                            link, url.downloads.application.name
-                        ),
-                        hash: HashType::new_sha256(url.downloads.application.sha256),
-                        version,
-                        build,
-                    })
-                } else {
-                    Err(format!("not found version {} with build {}", version, local_build).into())
                 }
+
+                let (buildlink, url) = gen_link(core_name, &game_version, &build).await?;
+
+                Ok(DownloadMeta {
+                    download_link: format!(
+                        "{}/downloads/{}",
+                        buildlink, url.downloads.application.name
+                    ),
+                    hash: HashType::new_sha256(url.downloads.application.sha256),
+                    game_version,
+                    version_build: Some(build),
+                })
             }
             None => {
-                if let Some(last_build) = build_list.last() {
-                    let buildlink = format!(
-                        "https://api.papermc.io/v2/projects/{}/versions/{}/builds/{}",
-                        core_name, version, last_build
-                    );
-                    let url: Url = reqwest::get(&buildlink).await?.json().await?;
+                if let Some(last_build) = build_list.last().map(|x| x.to_string()) {
+                    let (buildlink, url) = gen_link(core_name, &game_version, &last_build).await?;
 
                     Ok(DownloadMeta {
                         download_link: format!(
@@ -120,14 +105,26 @@ impl PaperMC {
                             buildlink, url.downloads.application.name
                         ),
                         hash: HashType::new_sha256(url.downloads.application.sha256),
-                        version,
-                        build,
+                        game_version,
+                        version_build: Some(last_build),
                     })
                 } else {
-                    Err(format!("not found version {} with build {:#?}", version, build).into())
+                    Err(format!("not found version {}", game_version).into())
                 }
             }
-        };
-        result
+        }
     }
+}
+
+async fn gen_link(
+    core_name: String,
+    game_version: &String,
+    last_build: &str,
+) -> Result<(String, Url), Box<dyn std::error::Error>> {
+    let buildlink = format!(
+        "https://api.papermc.io/v2/projects/{}/versions/{}/builds/{}",
+        core_name, game_version, last_build
+    );
+    let url = reqwest::get(&buildlink).await?.json::<Url>().await?;
+    Ok((buildlink, url))
 }

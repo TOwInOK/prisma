@@ -16,11 +16,11 @@ pub struct DownloadMeta {
     /// latest version
     ///
     /// like latest minecraft version
-    pub version: String,
+    pub game_version: String,
     /// build if it exist
     ///
     /// like lastest build if minecraft version
-    pub build: Option<String>,
+    pub version_build: Option<String>,
 }
 
 impl DownloadMeta {
@@ -28,17 +28,17 @@ impl DownloadMeta {
         match &value.provider {
             Provider::Core(platform) => match platform {
                 Platform::Vanilla => Vanilla::get_link(value).await,
-                Platform::Spigot => todo!(),
-                Platform::Bukkit => todo!(),
+                Platform::Spigot => unimplemented!("Need to implement for Spigot platform"),
+                Platform::Bukkit => unimplemented!("Need to implement for Bukkit platform"),
                 Platform::Paper => PaperMC::get_link(value).await,
                 Platform::Folia => PaperMC::get_link(value).await,
                 Platform::Waterfall => PaperMC::get_link(value).await,
                 Platform::Velocity => PaperMC::get_link(value).await,
                 Platform::Purpur => Purpur::get_link(value).await,
-                Platform::Fabric => todo!(),
-                Platform::Quilt => todo!(),
-                Platform::Forge => todo!(),
-                Platform::NeoForge => todo!(),
+                Platform::Fabric => unimplemented!("Need to implement for Fabric platform"),
+                Platform::Quilt => unimplemented!("Need to implement for Quilt platform"),
+                Platform::Forge => unimplemented!("Need to implement for Forge platform"),
+                Platform::NeoForge => unimplemented!("Need to implement for NeoForge platform"),
             },
             Provider::Extension((name, platform, extension_type)) => match extension_type {
                 ExtensionType::Mod(extension_provider) => match extension_provider {

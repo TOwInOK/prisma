@@ -68,20 +68,15 @@ impl Vanilla {
     /// Makes request to Mojang API to find the download link for minecraft.jar
     /// Returns DownloadMeta containing URL, hash and version info
     pub async fn get_link(item: &Item) -> Result<DownloadMeta, Box<dyn std::error::Error>> {
-        let version = match &item.version {
-            prisma_core::version::Version::Latest => None,
-            prisma_core::version::Version::Specific(version, _, _) => version.as_ref(),
-        };
-
-        let link = find_version(version).await?;
+        let link = find_version(item.version.game_version.as_deref()).await?;
         let response = reqwest::get(link.0).await?;
         let download_section: DownloadSection = response.json().await?;
 
         Ok(DownloadMeta {
             download_link: download_section.downloads.server.url,
             hash: HashType::new_sha1(download_section.downloads.server.sha1),
-            version: link.1,
-            build: None,
+            game_version: link.1,
+            version_build: None,
         })
     }
 }
@@ -91,7 +86,7 @@ impl Vanilla {
 /// Makes request to version manifest and returns tuple of (download URL, version string)
 /// If no version specified, returns latest release version
 async fn find_version(
-    version: Option<&String>,
+    version: Option<&str>,
 ) -> Result<(String, String), Box<dyn std::error::Error>> {
     const LINK: &str = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
@@ -102,17 +97,10 @@ async fn find_version(
         None => vanilla.latest.release,
     };
 
-    let found_version_and_url = vanilla
+    vanilla
         .versions
         .iter()
         .find(|x| x.version.contains(&local_version))
-        .map(|x| {
-            let c = x.version.clone();
-            (c, x.url.clone())
-        });
-
-    match found_version_and_url {
-        Some((version_str, url)) => Ok((url, version_str)),
-        None => Err(format!("Version {} not found", local_version).into()),
-    }
+        .map(|x| (x.version.clone(), x.url.clone()))
+        .ok_or_else(|| format!("Version {} not found", local_version).into())
 }
