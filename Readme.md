@@ -2,7 +2,7 @@
   <h1>🌟 Prisma</h1>
   <p><i>A modern Minecraft server bundler</i></p>
 
-  ⚠️ **Currently under active development** ⚠️
+  ⚠️ **Currently under non-active development** ⚠️
 </div>
 
 ## 📖 Overview
